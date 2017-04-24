@@ -9,6 +9,10 @@ This plugin becomes useful as part of a full security/members system when combin
 ## Features
 
 * Option to specify required user roles for pages and posts.
-* Ability to set alternate versions for different roles on pages and posts.
 * Show message and login form when security check fails.
-* Option to redirect to home page when security check fails.
+
+## Possible future features
+
+* Shortcode to only display content for specified roles.
+* ACF field type to select roles (useful when you use ACF to build page layouts--e.g., specify that a content row is only visible for certain roles).
+* Ability to set alternate versions for different roles on pages and posts.
