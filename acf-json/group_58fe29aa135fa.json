@@ -1,0 +1,51 @@
+{
+	"key": "group_58fe29aa135fa",
+	"title": "Simple Members Only",
+	"fields": [
+		{
+			"key": "field_58fe2a0ef7e00",
+			"label": "Permitted Roles",
+			"name": "smo_permitted_roles",
+			"type": "select",
+			"instructions": "Select the roles that are permitted to view this item. Leave empty for all.",
+			"required": 0,
+			"conditional_logic": 0,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"choices": {
+				"administrator": "Administrator",
+				"editor": "Editor",
+				"author": "Author",
+				"contributor": "Contributor",
+				"subscriber": "Subscriber"
+			},
+			"default_value": [],
+			"allow_null": 0,
+			"multiple": 1,
+			"ui": 1,
+			"ajax": 0,
+			"return_format": "value",
+			"placeholder": ""
+		}
+	],
+	"location": [
+		[
+			{
+				"param": "post_type",
+				"operator": "==",
+				"value": "any"
+			}
+		]
+	],
+	"menu_order": 0,
+	"position": "side",
+	"style": "default",
+	"label_placement": "top",
+	"instruction_placement": "label",
+	"hide_on_screen": "",
+	"active": 1,
+	"description": ""
+}
