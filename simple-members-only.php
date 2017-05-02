@@ -5,7 +5,7 @@ Plugin URI: https://github.com/mmirus/simple-members-only
 Description: Secure parts of your WordPress site for logged-in users only.
 Author: Matt Mirus
 Author URI: https://github.com/mmirus
-Version: 1.0
+Version: 1.2
 GitHub Plugin URI: https://github.com/mmirus/simple-members-only
 */
 
