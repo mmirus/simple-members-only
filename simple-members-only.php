@@ -113,8 +113,10 @@ class SMO {
     return $template;
   }
   
-  // check user role against permitted roles for requested item
+  // check user role against permitted roles for requested item; admins are always allowed
   public function has_permitted_role($permitted_roles) {
+    $permitted_roles[] = 'administrator';
+    
     $can_access = true;
     
     // if a role is required...
