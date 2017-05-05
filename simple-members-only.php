@@ -79,8 +79,14 @@ class SMO {
   
   // custom ACF location matching rule to match pages and all post types
   public function acf_location_rules_match_any_post_type($match, $rule, $options) {
+    // by default, available on posts and pages
+    $post_types = ['post', 'page'];
+    if (has_filter(__NAMESPACE__.'\\post_types')) {
+      $post_types = apply_filters(__NAMESPACE__.'\\post_types', $post_types);
+    }
+    
     if ($rule['param'] === 'post_type' && $rule['operator'] === '==' && $rule['value'] === 'any') {
-      return ($options['post_type'] !== 0);
+      return in_array(get_post_type($options['post_id']), $post_types);
     }
     
     return $match;
