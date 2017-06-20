@@ -5,15 +5,15 @@ Plugin URI: https://github.com/mmirus/simple-members-only
 Description: Secure parts of your WordPress site for logged-in users only.
 Author: Matt Mirus
 Author URI: https://github.com/mmirus
-Version: 1.7
+Version: 1.8
 GitHub Plugin URI: https://github.com/mmirus/simple-members-only
 */
 
 namespace SMO;
 
 class SMO {
-  // by default, available on posts and pages; this can be filtered
-  var $post_types = ['post', 'page'];
+  // by default, available on pages; this can be filtered
+  var $post_types = ['page'];
   
   function __construct() {
     // check if ACF is present and active, and fail if not
