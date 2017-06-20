@@ -12,6 +12,9 @@ GitHub Plugin URI: https://github.com/mmirus/simple-members-only
 namespace SMO;
 
 class SMO {
+  // by default, available on posts and pages; this can be filtered
+  var $post_types = ['post', 'page'];
+  
   function __construct() {
     // check if ACF is present and active, and fail if not
 		add_action('plugins_loaded', array($this, 'acf_check'));
@@ -26,8 +29,16 @@ class SMO {
     add_filter('acf/location/rule_values/post_type', array($this, 'acf_location_rules_values_post_types'));
     add_filter('acf/location/rule_match/post_type',  array($this, 'acf_location_rules_match_any_post_type'), 10, 3);
     
-    // perform securit check; load alternative content or redirect to login as needed
+    // perform security check; load alternative content or redirect to login as needed
     add_action('template_include', array($this, 'check_access'), 99);
+    
+    // secure the results of all public queries performed on an enabled post type
+    add_action('pre_get_posts', array($this, 'secure_queries'));
+    
+    // allow enabled post types to be filtered
+    if (has_filter(__NAMESPACE__.'\\post_types')) {
+      $this->post_types = apply_filters(__NAMESPACE__.'\\post_types', $this->post_types);
+    }
   }
   
   // Check if Advanced Custom Fields is loaded and deactivate if not
@@ -79,14 +90,8 @@ class SMO {
   
   // custom ACF location matching rule to match pages and all post types
   public function acf_location_rules_match_any_post_type($match, $rule, $options) {
-    // by default, available on posts and pages
-    $post_types = ['post', 'page'];
-    if (has_filter(__NAMESPACE__.'\\post_types')) {
-      $post_types = apply_filters(__NAMESPACE__.'\\post_types', $post_types);
-    }
-    
     if ($rule['param'] === 'post_type' && $rule['operator'] === '==' && $rule['value'] === 'any') {
-      return in_array(get_post_type($options['post_id']), $post_types);
+      return in_array(get_post_type($options['post_id']), $this->post_types);
     }
     
     return $match;
@@ -125,6 +130,19 @@ class SMO {
     return $template;
   }
   
+  // get user roles
+  public function get_user_roles() {
+    $roles = [];
+    
+    if (is_user_logged_in()) {
+      $user_id = get_current_user_id();
+      $user_info = get_userdata($user_id);
+      $roles = $user_info->roles;
+    }
+    
+    return $roles;
+  }
+  
   // check user role against permitted roles for requested item
   public function has_permitted_role($permitted_roles) {
     // if a role is required...
@@ -135,9 +153,7 @@ class SMO {
       }
       
       // get user roles
-      $user_id = get_current_user_id();
-      $user_info = get_userdata($user_id);
-      $roles = $user_info->roles;
+      $roles = $this->get_user_roles();
       
       // fail if user's role does not match
       if (empty(array_intersect($permitted_roles, $roles))) {
@@ -146,6 +162,67 @@ class SMO {
     }
     
     return true;
+  }
+  
+  // return meta query array that limits query results based on user role
+  private function get_roles_meta_query() {
+    $meta_query = [
+      'relation' => 'AND',
+      // always return all pages/posts that have no role restrictions:
+      [
+        'key'   => 'smo_permitted_roles',
+        'value' => '',
+      ],
+    ];
+    
+    // get user roles
+    $roles = $this->get_user_roles();
+    
+    if (count($roles)) {
+      $meta_query['relation'] = 'OR';
+    }
+    
+    // add each role returned as a permitted alternative in the meta query
+    foreach ($roles as $role) {
+      // if the user is an admin, set value to a wildcard so admins see all results
+      if ($role === 'administrator') {
+        $role = '';
+      }
+      // otherwise, format the role for use in the query
+      // the addition of "..."; to the string helps prevent false matches;
+      // roles are stored like this: a:1:{i:0;s:6:"member";}
+      // or like this for multiple values: a:2:{i:0;s:8:"prospect";i:1;s:6:"member";}
+      // adding the double quotes and semi colon turns the LIKE match into a precise match against a single serialized array value,
+      // preventing values like 'member' from matching 'senior-member' or 'member2'
+      else {
+        $role = '"'.$role.'";';
+      }
+      
+      $meta_query[] = [
+        'key' => 'smo_permitted_roles',
+        'value' => $role,
+        'compare' => 'LIKE',
+      ];
+    }
+    
+    // nest the meta query so that any additional meta queries aren't overridden or joined in a way that doesn't make sense
+    $meta_query = [
+      $meta_query
+    ];
+    
+    return $meta_query;
+  }
+
+  // secure the results of all public queries performed on an enabled post type
+  public function secure_queries($query) {
+    if (!is_admin()) {
+      $query_post_types = $query->get('post_type'); // '' means 'post'
+      if ($query_post_types === '' || in_array($query_post_types, $this->post_types) || (is_array($query_post_types) && array_intersect($query_post_types, $this->post_types)) ) {
+        $meta_query = $this->get_roles_meta_query();
+        
+        $query->set('meta_query', $meta_query);
+      }
+    }
   }
 }
 
