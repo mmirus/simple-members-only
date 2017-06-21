@@ -167,20 +167,21 @@ class SMO {
   // return meta query array that limits query results based on user role
   private function get_roles_meta_query() {
     $meta_query = [
-      'relation' => 'AND',
+      'relation' => 'OR',
       // always return all pages/posts that have no role restrictions:
       [
         'key'   => 'smo_permitted_roles',
+        'value' => '',
+      ],
+      [
+        'key'   => 'smo_permitted_roles',
+        'compare' => 'NOT EXISTS',
         'value' => '',
       ],
     ];
     
     // get user roles
     $roles = $this->get_user_roles();
-    
-    if (count($roles)) {
-      $meta_query['relation'] = 'OR';
-    }
     
     // add each role returned as a permitted alternative in the meta query
     foreach ($roles as $role) {
@@ -215,7 +216,7 @@ class SMO {
 
   // secure the results of all public queries performed on an enabled post type
   public function secure_queries($query) {
-    if (!is_admin()) {
+    if (!is_admin() && !is_single() && !is_page()) {
       $query_post_types = $query->get('post_type'); // '' means 'post'
       if ($query_post_types === '' || in_array($query_post_types, $this->post_types) || (is_array($query_post_types) && array_intersect($query_post_types, $this->post_types)) ) {
         $meta_query = $this->get_roles_meta_query();
