@@ -5,7 +5,7 @@ Plugin URI: https://github.com/mmirus/simple-members-only
 Description: Secure parts of your WordPress site for logged-in users only.
 Author: Matt Mirus
 Author URI: https://github.com/mmirus
-Version: 1.9
+Version: 1.9.1
 GitHub Plugin URI: https://github.com/mmirus/simple-members-only
 */
 
@@ -24,10 +24,6 @@ class SMO {
     
     // populate permitted roles field
     add_filter('acf/load_field/name=smo_permitted_roles', array($this, 'populate_permitted_roles'));
-    
-    // add custom ACF location rule to match pages and all post types
-    add_filter('acf/location/rule_values/post_type', array($this, 'acf_location_rules_values_post_types'));
-    add_filter('acf/location/rule_match/post_type',  array($this, 'acf_location_rules_match_any_post_type'), 10, 3);
     
     // perform security check; load alternative content or redirect to login as needed
     add_action('template_include', array($this, 'check_access'), 99);
@@ -79,22 +75,6 @@ class SMO {
   	}
 
   	return $field;
-  }
-
-  // add custom ACF location value to match pages and all post types
-  public function acf_location_rules_values_post_types($choices) {
-    $choices['any'] = 'Any';
-
-    return $choices;
-  }
-  
-  // custom ACF location matching rule to match pages and all post types
-  public function acf_location_rules_match_any_post_type($match, $rule, $options) {
-    if ($rule['param'] === 'post_type' && $rule['operator'] === '==' && $rule['value'] === 'any') {
-      return in_array(get_post_type($options['post_id']), $this->post_types);
-    }
-    
-    return $match;
   }
 
   // check if current visitor is permitted to access requested item; load login page if not

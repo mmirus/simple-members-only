@@ -36,7 +36,7 @@
 			{
 				"param": "post_type",
 				"operator": "==",
-				"value": "any"
+				"value": "page"
 			}
 		]
 	],
