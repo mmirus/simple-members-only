@@ -26,3 +26,15 @@ Out of the box, the plugin is set up for use with pages. You can enable it for u
 
 1. Tell SMO to run security checks on your post type: hook onto the filter `SMO\post_types`, returning an array of all post types SMO should check, e.g., `return array('page');`.
 2. Edit the ACF field group and add additional location rules as needed for the extra post types.
+
+## Filtering default permitted roles
+
+By default, admins pass all permitted roles checks. If you want to filter this to remove admins or add other roles, you can use the `SMO\permitted_roles` filter. For example:
+
+```php
+// add editor to SMO permitted roles
+add_filter('SMO\\permitted_roles', function ($roles) {
+    $roles[] = 'editor';
+    return $roles;
+});
+```

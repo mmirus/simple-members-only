@@ -5,7 +5,7 @@ Plugin URI: https://github.com/mmirus/simple-members-only
 Description: Secure parts of your WordPress site for logged-in users only.
 Author: Matt Mirus
 Author URI: https://github.com/mmirus
-Version: 1.9.1
+Version: 1.10.0
 GitHub Plugin URI: https://github.com/mmirus/simple-members-only
 */
 
@@ -101,7 +101,7 @@ class SMO
     
         // admin should always pass page-level checks
         if (!empty($permitted_roles)) {
-            $permitted_roles[] = 'administrator';
+            $permitted_roles = array_merge($permitted_roles, apply_filters(__NAMESPACE__.'\\permitted_roles', ['administrator']));
         }
     
         if (!$this->has_permitted_role($permitted_roles)) {
